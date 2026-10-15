@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>sim_drone</name>
+  <version>0.1.0</version>
+  <description>ROS 2 node that flies the kinematic demo model.</description>
+  <maintainer email="demo@example.com">Drone Waypoint Demo</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>drone_msgs</depend>
+  <depend>drone_sim_core</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,6 @@
+# command is start, abort, rtl, or reload.
+string command
+---
+bool success
+string message
+string state

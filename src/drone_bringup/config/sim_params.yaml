@@ -1,0 +1,23 @@
+sim_drone:
+  ros__parameters:
+    home_x: 0.0
+    home_y: 0.0
+    home_z: 0.0
+    max_horizontal_speed: 4.0
+    max_vertical_speed: 2.0
+    max_yaw_rate: 1.2
+    position_p_gain: 1.4
+    yaw_p_gain: 2.5
+    geofence_radius: 40.0
+    geofence_min_alt: -0.5
+    geofence_max_alt: 30.0
+    battery_initial: 100.0
+    battery_rtl_percent: 25.0
+    battery_critical_percent: 12.0
+    battery_idle_percent_per_sec: 0.01
+    battery_flight_percent_per_sec: 0.25
+    land_altitude: 0.2
+    rtl_acceptance: 0.6
+    # Lets the UI start the same mission again after landing. Not a charger model.
+    recharge_percent_per_sec: 0.5
+    publish_rate: 20.0

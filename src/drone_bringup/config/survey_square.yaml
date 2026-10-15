@@ -1,0 +1,43 @@
+# Synthetic survey square in local ENU meters.
+# The home matches the simulator origin. This is not a surveyed site.
+frame: local_enu
+home:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+waypoints:
+  - name: takeoff
+    x: 0.0
+    y: 0.0
+    z: 8.0
+    yaw: 0.0
+    hold_sec: 2.0
+    acceptance_radius: 0.7
+  - name: north_east
+    x: 12.0
+    y: 12.0
+    z: 8.0
+    yaw: 0.785
+    hold_sec: 2.0
+    acceptance_radius: 0.7
+  - name: north_west
+    x: -12.0
+    y: 12.0
+    z: 8.0
+    yaw: 2.356
+    hold_sec: 2.0
+    acceptance_radius: 0.7
+  - name: south_west
+    x: -12.0
+    y: -12.0
+    z: 6.0
+    yaw: -2.356
+    hold_sec: 2.0
+    acceptance_radius: 0.7
+  - name: south_east
+    x: 12.0
+    y: -12.0
+    z: 6.0
+    yaw: -0.785
+    hold_sec: 2.0
+    acceptance_radius: 0.7

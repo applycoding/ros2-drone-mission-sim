@@ -1,0 +1,60 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  humble:
+    name: build and test (ROS 2 Humble)
+    runs-on: ubuntu-latest
+    container:
+      image: ros:humble-ros-base
+    defaults:
+      run:
+        shell: bash
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Install git and demo dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            git \
+            python3-aiohttp \
+            python3-pytest \
+            python3-yaml \
+            ros-humble-ament-cmake-gtest
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Check out the workspace
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          source /opt/ros/humble/setup.bash
+          colcon build --event-handlers console_direct+ --cmake-args -DCMAKE_BUILD_TYPE=Release
+
+      - name: Unit tests
+        run: |
+          source /opt/ros/humble/setup.bash
+          colcon test --event-handlers console_direct+ --return-code-on-test-failure
+          colcon test-result --verbose
+
+      - name: Launch smoke test
+        run: |
+          source /opt/ros/humble/setup.bash
+          source install/setup.bash
+          ros2 launch drone_bringup failsafe_demo.launch.py --show-args
+          ros2 launch drone_bringup mission_demo.launch.py &
+          launch_pid=$!
+          cleanup() {
+            kill "${launch_pid}" >/dev/null 2>&1 || true
+            wait "${launch_pid}" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          python3 scripts/smoke_check.py

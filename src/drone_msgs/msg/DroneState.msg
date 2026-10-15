@@ -1,0 +1,22 @@
+# Telemetry published by the kinematic simulator.
+std_msgs/Header header
+float64 x
+float64 y
+float64 z
+float64 yaw
+float64 vx
+float64 vy
+float64 vz
+float64 speed
+float64 battery_percent
+float64 battery_rtl_percent
+float64 battery_critical_percent
+float64 distance_home
+float64 home_x
+float64 home_y
+float64 home_z
+float64 geofence_radius
+float64 geofence_max_alt
+string mode
+bool geofence_breached
+bool failsafe_active

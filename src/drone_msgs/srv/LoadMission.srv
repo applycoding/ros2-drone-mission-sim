@@ -1,0 +1,8 @@
+# path empty reloads the file the node was launched with.
+# format is auto, yaml, or geojson.
+string path
+string format
+---
+bool success
+string message
+int32 waypoint_count

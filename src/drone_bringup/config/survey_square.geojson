@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "properties": {
+    "note": "Synthetic demo coordinates. Not a real pad and not for navigation.",
+    "home": {"lat": 37.0, "lon": -122.0, "alt": 0.0}
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"name": "takeoff", "yaw": 0.0, "hold_sec": 2.0, "acceptance_radius": 0.8},
+      "geometry": {"type": "Point", "coordinates": [-122.0, 37.0, 8.0]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "east", "yaw": 0.0, "hold_sec": 2.0, "acceptance_radius": 0.8},
+      "geometry": {"type": "Point", "coordinates": [-121.99989, 37.0, 8.0]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "north_east", "yaw": 1.57, "hold_sec": 2.0, "acceptance_radius": 0.8},
+      "geometry": {"type": "Point", "coordinates": [-121.99989, 37.00009, 8.0]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "north", "yaw": 1.57, "hold_sec": 2.0, "acceptance_radius": 0.8},
+      "geometry": {"type": "Point", "coordinates": [-122.0, 37.00009, 6.0]}
+    }
+  ]
+}

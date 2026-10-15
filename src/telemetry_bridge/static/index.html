@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Waypoint demo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #12160f;
+      --panel: #1b2218;
+      --panel-2: #232b1f;
+      --ink: #f4f0e4;
+      --muted: #a7ae9b;
+      --line: #343d2e;
+      --amber: #e2a53a;
+      --green: #8fbf6a;
+      --red: #d35b45;
+      --map: #10150e;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #2a2618 0%, transparent 55%),
+        var(--bg);
+      color: var(--ink);
+      font: 15px/1.4 "DejaVu Sans", "Liberation Sans", sans-serif;
+    }
+    header, footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    footer {
+      border-bottom: 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .mark {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .diamond {
+      width: 14px;
+      height: 14px;
+      background: var(--amber);
+      transform: rotate(45deg);
+    }
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .eyebrow {
+      margin: 0;
+      color: var(--amber);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 10px;
+      color: var(--muted);
+      font-family: "DejaVu Sans Mono", "Liberation Mono", ui-monospace, monospace;
+      font-size: 12px;
+    }
+    .pill.live { color: var(--green); border-color: #3e5a32; }
+    .pill.poll { color: var(--amber); border-color: #6a5424; }
+    .pill.off { color: var(--red); border-color: #6a3328; }
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      min-height: calc(100% - 98px);
+    }
+    .map-wrap {
+      position: relative;
+      min-height: 480px;
+      height: calc(100vh - 98px);
+      background: var(--map);
+    }
+    canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    aside {
+      border-left: 1px solid var(--line);
+      background: var(--panel);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .plate {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+    }
+    .plate h2 {
+      margin: 0 0 8px;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .mode {
+      font-family: "DejaVu Sans Mono", "Liberation Mono", ui-monospace, monospace;
+      font-size: 28px;
+      letter-spacing: 0.04em;
+    }
+    .mode.warn { color: var(--amber); }
+    .mode.bad { color: var(--red); }
+    .mode.ok { color: var(--green); }
+    .readouts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+      margin: 0;
+    }
+    .readouts div { min-width: 0; }
+    dt { color: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+    dd {
+      margin: 0;
+      font-family: "DejaVu Sans Mono", "Liberation Mono", ui-monospace, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    .meter {
+      position: relative;
+      height: 10px;
+      background: #10140e;
+      border: 1px solid var(--line);
+      margin-top: 8px;
+    }
+    .meter span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--green);
+    }
+    .tick {
+      position: absolute;
+      top: -3px;
+      width: 1px;
+      height: 16px;
+      background: var(--amber);
+    }
+    .tick.critical { background: var(--red); }
+    ol {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 220px;
+      overflow: auto;
+    }
+    li {
+      display: grid;
+      grid-template-columns: 22px 1fr auto;
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px solid #2c3428;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    li.active { color: var(--ink); }
+    li.done { color: var(--green); }
+    .actions { display: flex; gap: 8px; }
+    button {
+      flex: 1;
+      background: #2a2416;
+      color: var(--ink);
+      border: 1px solid #6a5424;
+      padding: 8px 6px;
+      font: inherit;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--amber); }
+    button.danger { background: #2a1814; border-color: #6a3328; }
+    .detail { color: var(--muted); min-height: 2.6em; margin: 8px 0 0; }
+    @media (max-width: 860px) {
+      main { grid-template-columns: 1fr; }
+      aside { border-left: 0; border-top: 1px solid var(--line); }
+      .map-wrap { height: 70vh; min-height: 360px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="mark">
+      <div class="diamond" aria-hidden="true"></div>
+      <div>
+        <p class="eyebrow">Field demo</p>
+        <h1>Waypoint console</h1>
+      </div>
+    </div>
+    <div id="link" class="pill off">offline</div>
+  </header>
+  <main>
+    <section class="map-wrap" aria-label="Local east-north map">
+      <canvas id="map"></canvas>
+    </section>
+    <aside>
+      <section class="plate">
+        <h2>Vehicle</h2>
+        <div id="mode" class="mode">WAITING</div>
+        <div class="meter" aria-label="Battery">
+          <span id="battery-fill"></span>
+          <i id="tick-rtl" class="tick" hidden></i>
+          <i id="tick-critical" class="tick critical" hidden></i>
+        </div>
+        <dl class="readouts">
+          <div><dt>Battery</dt><dd id="battery">—</dd></div>
+          <div><dt>Altitude</dt><dd id="alt">—</dd></div>
+          <div><dt>Ground speed</dt><dd id="gs">—</dd></div>
+          <div><dt>Climb</dt><dd id="climb">—</dd></div>
+          <div><dt>Distance home</dt><dd id="home">—</dd></div>
+          <div><dt>Yaw from east</dt><dd id="yaw">—</dd></div>
+        </dl>
+      </section>
+      <section class="plate">
+        <h2>Mission</h2>
+        <div id="mission-state" class="mode" style="font-size:18px">WAITING</div>
+        <p id="detail" class="detail">Waiting for the planner.</p>
+        <ol id="waypoints"></ol>
+      </section>
+      <section class="plate">
+        <h2>Commands</h2>
+        <div class="actions">
+          <button type="button" data-command="start">Start</button>
+          <button type="button" data-command="abort" class="danger">Abort</button>
+          <button type="button" data-command="rtl">Return</button>
+        </div>
+        <p id="command-note" class="detail">Start streams the loaded plan. Abort and Return both come home.</p>
+      </section>
+    </aside>
+  </main>
+  <footer>
+    <span>Kinematic desktop demo. No aerodynamics, no MAVLink, no real aircraft.</span>
+    <span>Local ENU, meters. North is up.</span>
+  </footer>
+  <script>
+    const canvas = document.getElementById("map");
+    const ctx = canvas.getContext("2d");
+    const trail = [];
+    let snapshot = null;
+    let listSignature = "";
+    let wsOpen = false;
+    let restOk = false;
+    let backoff = 500;
+
+    function num(value, digits) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return "—";
+      return n.toFixed(digits);
+    }
+
+    function setLink() {
+      const pill = document.getElementById("link");
+      pill.className = "pill";
+      if (wsOpen) {
+        pill.classList.add("live");
+        pill.textContent = "websocket live";
+      } else if (restOk) {
+        pill.classList.add("poll");
+        pill.textContent = "rest polling";
+      } else {
+        pill.classList.add("off");
+        pill.textContent = "offline";
+      }
+    }
+
+    function apply(next) {
+      snapshot = next;
+      const drone = next.drone || {};
+      if (Number.isFinite(drone.x) && Number.isFinite(drone.y)) {
+        const last = trail[trail.length - 1];
+        const moved = !last || Math.hypot(drone.x - last.x, drone.y - last.y) > 0.15;
+        if (moved && drone.mode && drone.mode !== "UNKNOWN" && drone.mode !== "DISARMED") {
+          trail.push({x: drone.x, y: drone.y});
+          if (trail.length > 400) trail.shift();
+        }
+      }
+      paintReadouts(next);
+      paintMission(next);
+    }
+
+    function paintReadouts(data) {
+      const drone = data.drone || {};
+      const mode = drone.mode || "WAITING";
+      const modeEl = document.getElementById("mode");
+      modeEl.textContent = mode;
+      modeEl.className = "mode";
+      if (mode === "FLYING" || mode === "LANDED") modeEl.classList.add("ok");
+      else if (mode === "RTL") modeEl.classList.add("warn");
+      else if (mode === "FAILSAFE" || drone.geofence_breached) modeEl.classList.add("bad");
+      const battery = Number(drone.battery_percent);
+      document.getElementById("battery").textContent = Number.isFinite(battery) ? battery.toFixed(0) + "%" : "—";
+      const fill = document.getElementById("battery-fill");
+      const pct = Number.isFinite(battery) ? Math.max(0, Math.min(100, battery)) : 0;
+      fill.style.width = pct + "%";
+      const rtl = Number(drone.battery_rtl_percent);
+      const critical = Number(drone.battery_critical_percent);
+      fill.style.background = battery <= critical ? "var(--red)" : battery <= rtl ? "var(--amber)" : "var(--green)";
+      placeTick("tick-rtl", rtl);
+      placeTick("tick-critical", critical);
+      document.getElementById("alt").textContent = num(drone.z, 1) + " m";
+      const ground = Math.hypot(Number(drone.vx) || 0, Number(drone.vy) || 0);
+      document.getElementById("gs").textContent = ground.toFixed(1) + " m/s";
+      document.getElementById("climb").textContent = num(drone.vz, 1) + " m/s";
+      document.getElementById("home").textContent = num(drone.distance_home, 1) + " m";
+      const yaw = Number(drone.yaw);
+      document.getElementById("yaw").textContent = Number.isFinite(yaw) ? (yaw * 180 / Math.PI).toFixed(0) + "°" : "—";
+      const last = data.last_command;
+      if (last && last.command) {
+        document.getElementById("command-note").textContent =
+          (last.success ? "Accepted " : "Rejected ") + last.command + ": " + (last.message || "");
+      }
+    }
+
+    function placeTick(id, percent) {
+      const tick = document.getElementById(id);
+      if (!Number.isFinite(percent) || percent <= 0 || percent >= 100) {
+        tick.hidden = true;
+        return;
+      }
+      tick.hidden = false;
+      tick.style.left = percent + "%";
+    }
+
+    function paintMission(data) {
+      const mission = data.mission || {};
+      document.getElementById("mission-state").textContent = mission.state || "WAITING";
+      document.getElementById("detail").textContent = mission.detail || "Waiting for the planner.";
+      const waypoints = (data.plan && data.plan.waypoints) || [];
+      const signature = JSON.stringify({
+        names: waypoints.map(function (wp) { return wp.name; }),
+        index: mission.current_index,
+        state: mission.state
+      });
+      if (signature === listSignature) return;
+      listSignature = signature;
+      const list = document.getElementById("waypoints");
+      list.textContent = "";
+      waypoints.forEach(function (wp, index) {
+        const item = document.createElement("li");
+        const done = mission.state === "COMPLETE" || index < Number(mission.current_index || 0);
+        const active = mission.state === "RUNNING" && index === Number(mission.current_index || 0);
+        if (done) item.className = "done";
+        if (active) item.className = "active";
+        const n = document.createElement("span");
+        n.textContent = String(index + 1);
+        const name = document.createElement("span");
+        name.textContent = wp.name || ("wp" + (index + 1));
+        const alt = document.createElement("span");
+        alt.textContent = num(wp.z, 0) + " m";
+        item.append(n, name, alt);
+        list.append(item);
+      });
+    }
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function viewOf(data, width, height) {
+      const drone = data.drone || {};
+      const plan = data.plan || {};
+      const home = {x: Number(drone.home_x) || 0, y: Number(drone.home_y) || 0};
+      const points = [home, {x: Number(drone.x) || 0, y: Number(drone.y) || 0}];
+      (plan.waypoints || []).forEach(function (wp) { points.push(wp); });
+      const radius = Number(drone.geofence_radius) || 0;
+      if (radius > 0) {
+        points.push({x: home.x - radius, y: home.y - radius});
+        points.push({x: home.x + radius, y: home.y + radius});
+      }
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+      points.forEach(function (p) {
+        minX = Math.min(minX, Number(p.x) || 0);
+        maxX = Math.max(maxX, Number(p.x) || 0);
+        minY = Math.min(minY, Number(p.y) || 0);
+        maxY = Math.max(maxY, Number(p.y) || 0);
+      });
+      const span = Math.max(maxX - minX, maxY - minY, 10);
+      const pad = span * 0.08;
+      minX -= pad;
+      maxX += pad;
+      minY -= pad;
+      maxY += pad;
+      const worldW = Math.max(maxX - minX, 1);
+      const worldH = Math.max(maxY - minY, 1);
+      const scale = Math.min(width / worldW, height / worldH);
+      const offsetX = (width - worldW * scale) / 2;
+      const offsetY = (height - worldH * scale) / 2;
+      return {
+        scale: scale,
+        minX: minX,
+        maxX: maxX,
+        minY: minY,
+        maxY: maxY,
+        x: function (value) { return offsetX + (value - minX) * scale; },
+        y: function (value) { return height - (offsetY + (value - minY) * scale); }
+      };
+    }
+
+    function gridStep(scale) {
+      const meters = 56 / Math.max(scale, 1e-6);
+      const pow = Math.pow(10, Math.floor(Math.log10(Math.max(meters, 1e-6))));
+      const normalized = meters / pow;
+      if (normalized < 2) return pow;
+      if (normalized < 5) return 2 * pow;
+      return 5 * pow;
+    }
+
+    function draw() {
+      const width = canvas.getBoundingClientRect().width;
+      const height = canvas.getBoundingClientRect().height;
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#10150e";
+      ctx.fillRect(0, 0, width, height);
+      if (!snapshot) {
+        requestAnimationFrame(draw);
+        return;
+      }
+      const view = viewOf(snapshot, width, height);
+      const drone = snapshot.drone || {};
+      const plan = snapshot.plan || {};
+      const home = {x: Number(drone.home_x) || 0, y: Number(drone.home_y) || 0};
+      const step = gridStep(view.scale);
+      ctx.strokeStyle = "#243024";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      const xStart = Math.floor(view.minX / step) * step;
+      const yStart = Math.floor(view.minY / step) * step;
+      for (let gx = xStart; gx <= view.maxX; gx += step) {
+        ctx.moveTo(view.x(gx), view.y(view.minY));
+        ctx.lineTo(view.x(gx), view.y(view.maxY));
+      }
+      for (let gy = yStart; gy <= view.maxY; gy += step) {
+        ctx.moveTo(view.x(view.minX), view.y(gy));
+        ctx.lineTo(view.x(view.maxX), view.y(gy));
+      }
+      ctx.stroke();
+
+      const radius = Number(drone.geofence_radius) || 0;
+      if (radius > 0) {
+        ctx.save();
+        ctx.strokeStyle = "#d35b45";
+        ctx.setLineDash([6, 5]);
+        ctx.beginPath();
+        ctx.arc(view.x(home.x), view.y(home.y), radius * view.scale, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      const waypoints = plan.waypoints || [];
+      if (waypoints.length) {
+        ctx.strokeStyle = "#e2a53a";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        waypoints.forEach(function (wp, index) {
+          const px = view.x(Number(wp.x) || 0);
+          const py = view.y(Number(wp.y) || 0);
+          if (index === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+        waypoints.forEach(function (wp, index) {
+          const px = view.x(Number(wp.x) || 0);
+          const py = view.y(Number(wp.y) || 0);
+          ctx.fillStyle = "#e2a53a";
+          ctx.beginPath();
+          ctx.arc(px, py, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#f4f0e4";
+          ctx.font = "12px DejaVu Sans Mono, Liberation Mono, monospace";
+          ctx.fillText(String(index + 1), px + 7, py - 6);
+        });
+      }
+
+      if (trail.length > 1) {
+        ctx.strokeStyle = "#8fbf6a";
+        ctx.globalAlpha = 0.75;
+        ctx.beginPath();
+        trail.forEach(function (point, index) {
+          const px = view.x(point.x);
+          const py = view.y(point.y);
+          if (index === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.save();
+      ctx.translate(view.x(home.x), view.y(home.y));
+      ctx.rotate(Math.PI / 4);
+      ctx.fillStyle = "#f4f0e4";
+      ctx.fillRect(-4, -4, 8, 8);
+      ctx.restore();
+
+      if (drone.mode && drone.mode !== "UNKNOWN") {
+        ctx.save();
+        ctx.translate(view.x(Number(drone.x) || 0), view.y(Number(drone.y) || 0));
+        ctx.rotate(-(Number(drone.yaw) || 0));
+        ctx.fillStyle = "#f2d48a";
+        ctx.beginPath();
+        ctx.moveTo(12, 0);
+        ctx.lineTo(-8, 6);
+        ctx.lineTo(-5, 0);
+        ctx.lineTo(-8, -6);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      ctx.fillStyle = "#a7ae9b";
+      ctx.font = "12px DejaVu Sans, Liberation Sans, sans-serif";
+      ctx.fillText("N", width - 18, 18);
+      const bar = Math.max(step, 1);
+      const pixels = bar * view.scale;
+      ctx.strokeStyle = "#f4f0e4";
+      ctx.beginPath();
+      ctx.moveTo(16, height - 18);
+      ctx.lineTo(16 + pixels, height - 18);
+      ctx.stroke();
+      ctx.fillText(bar >= 1000 ? (bar / 1000) + " km" : bar + " m", 16, height - 24);
+      requestAnimationFrame(draw);
+    }
+
+    async function send(command) {
+      try {
+        const response = await fetch("/api/command", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({command: command})
+        });
+        const body = await response.json();
+        const note = document.getElementById("command-note");
+        if (response.ok) note.textContent = "Sent " + body.command + ". Waiting for the planner.";
+        else note.textContent = body.error || "Command rejected.";
+      } catch (err) {
+        document.getElementById("command-note").textContent = "Command failed: bridge unreachable.";
+      }
+    }
+
+    async function poll() {
+      try {
+        const response = await fetch("/api/state", {cache: "no-store"});
+        if (!response.ok) throw new Error("status");
+        restOk = true;
+        apply(await response.json());
+      } catch (err) {
+        restOk = false;
+      }
+      setLink();
+    }
+
+    function connect() {
+      const proto = location.protocol === "https:" ? "wss" : "ws";
+      let socket;
+      try {
+        socket = new WebSocket(proto + "://" + location.host + "/ws");
+      } catch (err) {
+        wsOpen = false;
+        setLink();
+        setTimeout(connect, backoff);
+        return;
+      }
+      socket.onopen = function () {
+        wsOpen = true;
+        backoff = 500;
+        setLink();
+      };
+      socket.onmessage = function (event) {
+        try {
+          apply(JSON.parse(event.data));
+        } catch (err) {
+          return;
+        }
+      };
+      socket.onclose = function () {
+        wsOpen = false;
+        setLink();
+        setTimeout(connect, backoff);
+        backoff = Math.min(backoff * 2, 5000);
+      };
+    }
+
+    document.querySelectorAll("button[data-command]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        send(button.getAttribute("data-command"));
+      });
+    });
+    window.addEventListener("resize", resize);
+    resize();
+    requestAnimationFrame(draw);
+    connect();
+    poll();
+    setInterval(poll, 2000);
+  </script>
+</body>
+</html>

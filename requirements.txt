@@ -1,0 +1,6 @@
+# Ubuntu 22.04 / ROS 2 Humble already provides these as apt packages:
+#   python3-aiohttp, python3-yaml, python3-pytest
+# This file is a pip fallback for a host that cannot install the apt packages.
+aiohttp>=3.8,<4
+PyYAML>=5.4
+pytest>=6.2
