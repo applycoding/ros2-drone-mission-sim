@@ -1,0 +1,9 @@
+mission_planner_node:
+  ros__parameters:
+    mission_file: ""
+    auto_start: true
+    tick_rate_hz: 20.0
+    odom_topic: /drone/odom
+    battery_topic: /drone/battery
+    setpoint_topic: /drone/setpoint
+    pose_topic: /drone/setpoint_pose

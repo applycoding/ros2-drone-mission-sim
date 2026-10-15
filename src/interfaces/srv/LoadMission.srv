@@ -1,0 +1,6 @@
+string mission_path
+---
+bool success
+string message
+uint32 item_count
+string mission_name

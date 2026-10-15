@@ -1,0 +1,17 @@
+drone_sim_node:
+  ros__parameters:
+    rate_hz: 50.0
+    max_speed_m_s: 3.0
+    max_yaw_rate_rad_s: 1.2
+    position_gain: 1.5
+    velocity_tau_s: 0.2
+    hover_drain_pct_per_s: 0.02
+    move_drain_pct_per_s: 0.05
+    low_percent: 25.0
+    critical_percent: 10.0
+    battery_percent: 100.0
+    frame_id: odom
+    child_frame_id: base_link
+    setpoint_topic: /drone/setpoint
+    odom_topic: /drone/odom
+    battery_topic: /drone/battery
