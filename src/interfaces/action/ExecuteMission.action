@@ -1,0 +1,16 @@
+# Load mission_path when it is non-empty, then arm and run.
+# An empty path reruns the mission that is already loaded.
+string mission_path
+---
+bool success
+string message
+uint32 waypoints_reached
+string final_state
+---
+uint8 state
+string state_name
+uint32 waypoint_index
+uint32 waypoint_count
+float64 distance_to_target
+float32 battery_percent
+string failsafe_reason

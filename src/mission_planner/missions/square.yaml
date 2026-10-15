@@ -1,0 +1,23 @@
+name: square
+frame: local_enu
+home:
+  x: 0.0
+  y: 0.0
+  z: 0.0
+takeoff_altitude_m: 5.0
+rtl_altitude_m: 5.0
+acceptance_radius_m: 0.5
+cruise_speed_m_s: 2.0
+battery_failsafe_percent: 25.0
+battery_critical_percent: 10.0
+geofence:
+  center_x: 0.0
+  center_y: 0.0
+  radius_m: 40.0
+  min_alt_m: -1.0
+  max_alt_m: 30.0
+waypoints:
+  - {x: 8.0, y: 0.0, z: 5.0, yaw_deg: 0.0, hold_s: 0.5}
+  - {x: 8.0, y: 8.0, z: 5.0, yaw_deg: 90.0, hold_s: 0.5}
+  - {x: 0.0, y: 8.0, z: 5.0, yaw_deg: 180.0, hold_s: 0.5}
+  - {x: 0.0, y: 0.0, z: 5.0, yaw_deg: -90.0, hold_s: 0.0}
